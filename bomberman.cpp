@@ -44,6 +44,54 @@
 #define CAMZ 15.0    //posicao da camera no eixo z
 #define CAMY 15.0    //posicao da camera no eixo z
 
+// Define a probabilidade de criar uma parede destrutível em uma posição vazia do mapa
+const float DESTRUCTIBLE_WALL_PROBABILITY = 0.3;
+const int MAP_WIDTH = 30;
+const int MAP_HEIGHT = 30;
+
+// Define o mapa do jogo
+int gameMap[MAP_WIDTH][MAP_HEIGHT] = {
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
+
+// Define uma estrutura para armazenar as informações sobre as paredes
+struct Wall {
+    int x, y;
+    bool destructible;
+};
+
+std::vector<Wall> walls;
+
+
 int fps_desejado = FPS/2; // variavel para alterar os frames por segundo desejado
 int fps = 0; //contador de frames por segundo
 float reshape_ratio = 1.0; // Manter proporcional a projecao
@@ -255,6 +303,25 @@ void init_glut(const char *nome_janela, int argc, char** argv){
     animations[shooting] = animation;
     printf(" done.\n");
 	
+	srand(5);
+	// Percorre a matriz do jogo e cria paredes destrutíveis com base na probabilidade definida
+	for (int i = 0; i < MAP_WIDTH; i++) {
+	    for (int j = 0; j < MAP_HEIGHT; j++) {
+        if (gameMap[i][j] == 0 && (float) rand() / RAND_MAX < DESTRUCTIBLE_WALL_PROBABILITY) {
+            Wall wall;
+            wall.x = i;
+            wall.y = j;
+            wall.destructible = true;
+            walls.push_back(wall);
+        } else if (gameMap[i][j] == 1) { // Cria parede indestrutível
+            Wall wall;
+            wall.x = i;
+            wall.y = j;
+            wall.destructible = false;
+            walls.push_back(wall);
+        	}
+		}
+	}
 }
 
 /*
@@ -548,12 +615,13 @@ void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize) {
 // }
 
 void drawFloor(GLuint mode) {
-    // Desenhar o chï¿½o
+	
+	   // Desenhar o ch?o
     if (mode & GLM_SMOOTH) glEnable(GL_SMOOTH);
     else glEnable(GL_FLAT);
     glDisable(GL_TEXTURE_2D);
-    for (int x = -15; x <= 15; x++) {
-        for (int z = -15; z <= 15; z++) {
+    for (int x = -15; x < 15; x++) {
+        for (int z = -15; z < 15; z++) {
             if ((x + z) % 2 == 0) glColor3f(0.7, 0.7, 0.7);
             else glColor3f(0.5, 0.5, 0.5);
             glPushMatrix();
@@ -576,36 +644,33 @@ void drawFloor(GLuint mode) {
             glPopMatrix();
         }
     }
-
-    // Desenhar as paredes
-    glColor3f(0.5, 0.5, 0.5);
-    for (int x = -16; x <= 16; x++) {
-        glPushMatrix();
-        glTranslatef(x, 0, -16);
-        glScalef(1, 2, 1);
-        glutSolidCube(1);
-        glPopMatrix();
-
-        glPushMatrix();
-        glTranslatef(x, 0, 16);
-        glScalef(1, 2, 1);
-        glutSolidCube(1);
-        glPopMatrix();
-    }
-    for (int z = -16; z <= 16; z++) {
-        glPushMatrix();
-        glTranslatef(-16, 0, z);
-        glScalef(1, 2, 1);
-        glutSolidCube(1);
-        glPopMatrix();
-
-        glPushMatrix();
-        glTranslatef(16, 0, z);
-        glScalef(1, 2, 1);
-        glutSolidCube(1);
-        glPopMatrix();
-    }
-    glEnable(GL_TEXTURE_2D);
+    
+	// Calcula o centro da matriz
+	int centerX = (int)MAP_WIDTH / 2 ;
+	int centerY = (int)MAP_HEIGHT / 2;
+	
+	printf("%d %d %d", walls.size(), centerX, centerY);
+	
+	// Desenha todas as paredes
+	for (int i = 0; i < int(walls.size()); i++) {
+	    int x = walls[i].x;
+	    int y = walls[i].y;
+	    bool destructible = walls[i].destructible;
+	
+	    // Define a cor da parede
+	    if (destructible) {
+	        glColor3f(1.0f, 0.0f, 0.0f); // Parede destrutível (vermelha)
+	    } else {
+	        glColor3f(0.5f, 0.5f, 0.5f); // Parede indestrutível (cinza)
+	    }
+	
+	    // Desenha a parede
+	    glPushMatrix();
+	    glTranslatef(x - centerX, 0, y - centerY);
+	    glScalef(1, 1, 1);
+	    glutSolidCube(1.0f);
+	    glPopMatrix();
+	}
 }
 
 /*
@@ -792,7 +857,7 @@ void keyboard_special(int key, int x, int y){
             if(!is_paused){
                 if(is_jumping) keyPlayAnimation(jumping);
                 else keyPlayAnimation(running);
-                if(posx <= 15){
+                if(posx <= 13){
 	                 if(direcao==direita){
 	                    if(roty == 90.0) posx += deslocamento;
 	                    else if (roty < 90.0 ) roty -= graus;
@@ -810,7 +875,7 @@ void keyboard_special(int key, int x, int y){
             if(!is_paused){
                 if(is_jumping) keyPlayAnimation(jumping);
                 else keyPlayAnimation(running);
-                if(posx >= -15){
+                if(posx >= -14){
 	                if(direcao==esquerda){
 	                    if(roty == -90.0 || roty == 270.0) posx -= deslocamento;
 	                    else if ( roty < -90.0 || roty < 270.0 ) roty += graus;
@@ -828,7 +893,7 @@ void keyboard_special(int key, int x, int y){
             if(!is_paused){
                 if(is_jumping) keyPlayAnimation(jumping);
                 else keyPlayAnimation(running);
-                if(posz >= -15){
+                if(posz >= -14){
 	                if(direcao == tras){
 	                    if(roty == 180.0) posz -= deslocamento;
 	                    else if(roty < 180.0) roty += graus;
@@ -846,7 +911,7 @@ void keyboard_special(int key, int x, int y){
                 if(!is_paused){
                     if(is_jumping) keyPlayAnimation(jumping);
                     else keyPlayAnimation(running);
-                    if(posz <= 15){
+                    if(posz <= 13){
 	                    if(direcao == frente){
 	                        // if (roty == 0.0) posz += deslocamento;
 	                        if (roty == 0.0) posz += deslocamento;
