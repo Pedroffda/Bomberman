@@ -2,7 +2,7 @@
 <Project>
 	<Libs Value="-static -lglut32 -lglu32 -lopengl32 -lwinmm -lgdi32"/>
 	<Flags Value="-DGLUT_STATIC"/>
-	<Target Value="modelo3D.exe"/>
+	<Target Value="bomberman.exe"/>
 	<CommandLine Value=""/>
 	<CompilerOptions Value="-Wall -s"/>
 	<DeleteObjectsBefore Value="Yes"/>
@@ -14,7 +14,7 @@
 	<CompilerType Value="CPP"/>
 	<AppType Value="CONSOLE"/>
 	<Files>
-		<File Name="modelo3D.cpp"/>
+		<File Name="bomberman.cpp"/>
 		<File Name="glut_text.h"/>
 		<File Name="glm.h"/>
 		<File Name="glm.cpp"/>

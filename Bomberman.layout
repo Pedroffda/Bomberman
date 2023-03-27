@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Layout>
+	<Files>
+		<File Name="bomberman.cpp" Top="Yes" Tabpos="1" TopLine="413">
+			<Cursor Line="419" Column="20"/>
+		</File>
+		<File Name="glm.h" Top="No" Tabpos="2" TopLine="94">
+			<Cursor Line="111" Column="25"/>
+		</File>
+	</Files>
+</Layout>

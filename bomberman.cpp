@@ -85,12 +85,17 @@ int gameMap[MAP_WIDTH][MAP_HEIGHT] = {
 
 // Define uma estrutura para armazenar as informações sobre as paredes
 struct Wall {
-    int x, y;
+    float x, y, centerX, centerY, centerZ;
     bool destructible;
 };
 
-std::vector<Wall> walls;
+struct AABB {
+    float minX, minY, minZ;
+    float maxX, maxY, maxZ;
+};
 
+std::vector<Wall> walls;
+std::vector<AABB> wallAABBs;
 
 int fps_desejado = FPS/2; // variavel para alterar os frames por segundo desejado
 int fps = 0; //contador de frames por segundo
@@ -148,6 +153,16 @@ bool is_paused = false; // Determina se a animacao esta tocando ou em pausa
 float shoot; 
 int new_bomb_id = 0;
 
+float xmin;
+float xmax;
+float ymin;
+float ymax;
+float zmin;
+float zmax;
+
+AABB box;
+AABB wallAABB ;
+
 GLint apply_texture = GL_DECAL; //Determina como a textura sera aplicada no objeto
 std::string apply_texture_name = "Decal"; //Nome da fucao que sera usada para aplicar a textura no objeto
 
@@ -188,6 +203,7 @@ void menu(int value);
 void drawSphere(float raio, int slices, int stacks);
 void drawBomb(int id, GLuint mode);
 void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize);
+bool checkCollision(AABB box1, AABB box2);
 
 /*
  * Funcao principal
@@ -307,21 +323,28 @@ void init_glut(const char *nome_janela, int argc, char** argv){
 	// Percorre a matriz do jogo e cria paredes destrutíveis com base na probabilidade definida
 	for (int i = 0; i < MAP_WIDTH; i++) {
 	    for (int j = 0; j < MAP_HEIGHT; j++) {
-        if (gameMap[i][j] == 0 && (float) rand() / RAND_MAX < DESTRUCTIBLE_WALL_PROBABILITY) {
-            Wall wall;
-            wall.x = i;
-            wall.y = j;
-            wall.destructible = true;
-            walls.push_back(wall);
-        } else if (gameMap[i][j] == 1) { // Cria parede indestrutível
-            Wall wall;
-            wall.x = i;
-            wall.y = j;
-            wall.destructible = false;
-            walls.push_back(wall);
-        	}
-		}
+	        if (gameMap[i][j] == 0 && (float) rand() / RAND_MAX < DESTRUCTIBLE_WALL_PROBABILITY) {
+	            Wall wall;
+	            wall.x = i;
+	            wall.y = j;
+	            wall.centerX = (i - (MAP_WIDTH / 2)) + 0.5f;
+	            wall.centerY = 0.5f;
+	            wall.centerZ = (j - (MAP_HEIGHT / 2)) + 0.5f;
+	            wall.destructible = true;
+	            walls.push_back(wall);
+	        } else if (gameMap[i][j] == 1) { // Cria parede indestrutível
+	            Wall wall;
+	            wall.x = i;
+	            wall.y = j;
+	            wall.centerX = (i - (MAP_WIDTH / 2)) + 0.5f;
+	            wall.centerY = 0.5f;
+	            wall.centerZ = (j - (MAP_HEIGHT / 2)) + 0.5f;
+	            wall.destructible = false;
+	            walls.push_back(wall);
+	        }
+	    }
 	}
+
 }
 
 /*
@@ -393,7 +416,20 @@ void display(void){
         glRotated (roty, 0.0f, 1.0f, 0.0f);
         glRotated (rotz, 0.0f, 0.0f, 1.0f);
         drawAnimation(animation_id, mode);
+        glutSolidCube(0.5); // desenha a caixa com tamanho 1.0
+        GLfloat half_size = 0.5f * scale; // metade do tamanho do cubo
+
+		box.minX = posx - half_size;
+		box.maxX = posx + half_size;
+		box.minY = posy - half_size;
+		box.maxY = posy + half_size;
+		box.minZ = posz - half_size;
+		box.maxZ = posz + half_size;
+
     glPopMatrix();
+    
+
+
     
 	if(is_bombing){
 		
@@ -646,31 +682,47 @@ void drawFloor(GLuint mode) {
     }
     
 	// Calcula o centro da matriz
-	int centerX = (int)MAP_WIDTH / 2 ;
-	int centerY = (int)MAP_HEIGHT / 2;
+	float centerX = (float)MAP_WIDTH / 2.0f;
+	float centerY = (float)MAP_HEIGHT / 2.0f;
 	
-	printf("%d %d %d", walls.size(), centerX, centerY);
+	// printf("%f %f %f", walls.size(), centerX, centerY);
+// Desenha todas as paredes
+for (int i = 0; i < int(walls.size()); i++) {
+
+    int x = walls[i].x;
+    int y = walls[i].y;
+    bool destructible = walls[i].destructible;
+
+    // Define a cor da parede
+    if (destructible) {
+        glColor3f(1.0f, 0.0f, 0.0f); // Parede destrutível (vermelha)
+    } else {
+        glColor3f(0.5f, 0.5f, 0.5f); // Parede indestrutível (cinza)
+    }
+
+    // Desenha a parede
+    glPushMatrix();
+    glTranslatef(x - centerX, 0, y - centerY);
+    glScalef(1.2f, 2.0f, 1.2f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    // Obtém informações da caixa delimitadora
+    float halfWidth = 0.6f; // metade da largura do cubo (1.0 * 1.2 / 2)
+    float halfHeight = 1.0f; // metade da altura do cubo (2.0 / 2)
+    float halfDepth = 0.6f; // metade da profundidade do cubo (1.0 * 1.2 / 2)
+    float centerX = x - centerX; // coordenada x do centro da parede em relação ao centro da sala
+    float centerY = 0.0f; // a parede não se move em relação à altura do chão
+    float centerZ = y - centerY; // coordenada y do centro da parede em relação ao centro da sala
+
+    // Usa as informações da caixa delimitadora para detectar colisões com o personagem
+    wallAABB = {centerX - halfWidth, centerY - halfHeight, centerZ - halfDepth,
+                     centerX + halfWidth, centerY + halfHeight, centerZ + halfDepth};
+	wallAABBs.push_back(wallAABB);
+}
+
 	
-	// Desenha todas as paredes
-	for (int i = 0; i < int(walls.size()); i++) {
-	    int x = walls[i].x;
-	    int y = walls[i].y;
-	    bool destructible = walls[i].destructible;
-	
-	    // Define a cor da parede
-	    if (destructible) {
-	        glColor3f(1.0f, 0.0f, 0.0f); // Parede destrutível (vermelha)
-	    } else {
-	        glColor3f(0.5f, 0.5f, 0.5f); // Parede indestrutível (cinza)
-	    }
-	
-	    // Desenha a parede
-	    glPushMatrix();
-	    glTranslatef(x - centerX, 0, y - centerY);
-	    glScalef(1, 1, 1);
-	    glutSolidCube(1.0f);
-	    glPopMatrix();
-	}
+	glEnable(GL_TEXTURE_2D);
 }
 
 /*
@@ -778,6 +830,13 @@ void update_direcao(){
     if(roty == -90.0 || roty == 270.0) direcao = esquerda;
 }
 
+bool checkCollision(AABB box1, AABB box2) {
+    if (box1.maxX < box2.minX || box1.minX > box2.maxX) return false;
+    if (box1.maxY < box2.minY || box1.minY > box2.maxY) return false;
+    if (box1.maxZ < box2.minZ || box1.minZ > box2.maxZ) return false;
+    return true;
+}
+
 /*
  * Controle das teclas especiais (Cursores, F1 a F12, etc...)
  */
@@ -852,25 +911,53 @@ void keyboard_special(int key, int x, int y){
             glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, apply_texture);
         break;
             
-        //Use as setas do teclado para movimentar o personagem
-        case GLUT_KEY_RIGHT: // Move o personagem para direita
-            if(!is_paused){
-                if(is_jumping) keyPlayAnimation(jumping);
-                else keyPlayAnimation(running);
-                if(posx <= 13){
-	                 if(direcao==direita){
-	                    if(roty == 90.0) posx += deslocamento;
-	                    else if (roty < 90.0 ) roty -= graus;
-	                    else roty += graus;
-	                }else if (direcao == esquerda){
-	                    if( roty >= 180.0) roty -= graus;
-	                    else roty += graus;
-	                }else if (direcao == frente) roty += graus;
-	                else roty -= graus;
-	                update_direcao();
-				}
-            }
-        break;
+		case GLUT_KEY_RIGHT: // Move o personagem para direita
+		    if (!is_paused) {
+		        if (is_jumping) {
+		            keyPlayAnimation(jumping);
+		        } else {
+		            keyPlayAnimation(running);
+		        }
+		
+		        // Verificar a colisão com as paredes
+		        bool collided = false;
+		        for (int i = 0; i < int(walls.size()); i++) {
+		            if (checkCollision(box, wallAABBs[i])) {
+		                // há uma colisão com a parede i
+		                // execute o código para lidar com a colisão aqui
+		                collided = true;
+		                printf("colisao\n");
+		                break;
+		            }
+		        }
+		        
+		        if (!collided) {
+		            printf("andou\n");
+		            if (direcao == direita) {
+		                if (roty == 90.0) {
+		                    posx += deslocamento;
+		                } else if (roty < 90.0) {
+		                    roty -= graus;
+		                } else {
+		                    roty += graus;
+		                }
+		            } else if (direcao == esquerda) {
+		                if (roty >= 180.0) {
+		                    roty -= graus;
+		                } else {
+		                    roty += graus;
+		                }
+		            } else if (direcao == frente) {
+		                roty += graus;
+		            } else {
+		                roty -= graus;
+		            }
+		            update_direcao();
+		        }
+		    }
+		    break;
+
+
         case GLUT_KEY_LEFT: // Move o personagem para esquerda
             if(!is_paused){
                 if(is_jumping) keyPlayAnimation(jumping);
