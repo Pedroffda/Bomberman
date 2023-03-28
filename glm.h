@@ -25,7 +25,6 @@
 
 #include <string>
 #include <vector>
-
 using namespace std;
 
 #ifndef M_PI

@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Layout>
 	<Files>
-		<File Name="bomberman.cpp" Top="Yes" Tabpos="1" TopLine="413">
-			<Cursor Line="419" Column="20"/>
+		<File Name="bomberman.cpp" Top="Yes" Tabpos="1" TopLine="85">
+			<Cursor Line="119" Column="1"/>
 		</File>
-		<File Name="glm.h" Top="No" Tabpos="2" TopLine="94">
-			<Cursor Line="111" Column="25"/>
+		<File Name="wall.h" Top="No" Tabpos="2" TopLine="67">
+			<Cursor Line="80" Column="1"/>
+			<Selection Line="92" Column="1"/>
+		</File>
+		<File Name="player.h" Top="No" Tabpos="3" TopLine="62">
+			<Cursor Line="36" Column="41"/>
 		</File>
 	</Files>
 </Layout>

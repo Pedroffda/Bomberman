@@ -15,9 +15,11 @@
 	<AppType Value="CONSOLE"/>
 	<Files>
 		<File Name="bomberman.cpp"/>
-		<File Name="glut_text.h"/>
+		<File Name="wall.h"/>
+		<File Name="bomberman.h"/>
 		<File Name="glm.h"/>
 		<File Name="glm.cpp"/>
+		<File Name="glut_text.h"/>
 	</Files>
 	<AppIcon>
 		0000010001003030000001002000A82500001600000028000000300000006000

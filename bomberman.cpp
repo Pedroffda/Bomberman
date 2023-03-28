@@ -45,57 +45,41 @@
 #define CAMY 15.0    //posicao da camera no eixo z
 
 // Define a probabilidade de criar uma parede destrutível em uma posição vazia do mapa
-const float DESTRUCTIBLE_WALL_PROBABILITY = 0.3;
-const int MAP_WIDTH = 30;
-const int MAP_HEIGHT = 30;
+const float DESTRUCTIBLE_WALL_PROBABILITY = 0.1;
+const int MAP_WIDTH = 15;
+const int MAP_HEIGHT = 15;
 
 // Define o mapa do jogo
 int gameMap[MAP_WIDTH][MAP_HEIGHT] = {
-	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
+
+// Calcula o centro da matriz
+int centerX = (float)MAP_WIDTH / 2.0f;
+int centerZ= (float)MAP_HEIGHT / 2.0f;
 
 // Define uma estrutura para armazenar as informações sobre as paredes
 struct Wall {
-    float x, y, centerX, centerY, centerZ;
-    bool destructible;
-};
-
-struct AABB {
-    float minX, minY, minZ;
-    float maxX, maxY, maxZ;
+    float x, y , z, raio ;
+    bool destrutivel;
 };
 
 std::vector<Wall> walls;
-std::vector<AABB> wallAABBs;
+
 
 int fps_desejado = FPS/2; // variavel para alterar os frames por segundo desejado
 int fps = 0; //contador de frames por segundo
@@ -134,6 +118,8 @@ float graus = 15.0, deslocamento = 0.2; //incrementos do angulo de graus e do de
 float scale = 1.0; // fator de escala proporcional em todos os eixos do modelo 3D
 float rotx = 0.0, roty = 0.0, rotz = 0.0; // angulo de graus do modelo 3D no eixo x, y e z
 float posx = 0.0, posy = POSY, posz = 0.0; // deslocamento do modelo 3D no eixo x, y e z
+float praio = 0.1;
+// float wraio = 0.25;
 float posxBomb = 0.0, posyBomb = POSYBOMB, poszBomb = 0.0;  //deslocamento da bomba
 
 float R = 1.0, G = 1.0, B = 1.0; //Cores do desenho controladas pelo glColor (inicial: cor branca)
@@ -150,18 +136,8 @@ bool use_light = true; // Determina se liga ou desliga a luz
 bool render_solid = true; // Determina se renderiza o objeto solido ou em wireframe
 bool is_paused = false; // Determina se a animacao esta tocando ou em pausa
 
-float shoot; 
+ 
 int new_bomb_id = 0;
-
-float xmin;
-float xmax;
-float ymin;
-float ymax;
-float zmin;
-float zmax;
-
-AABB box;
-AABB wallAABB ;
 
 GLint apply_texture = GL_DECAL; //Determina como a textura sera aplicada no objeto
 std::string apply_texture_name = "Decal"; //Nome da fucao que sera usada para aplicar a textura no objeto
@@ -203,7 +179,8 @@ void menu(int value);
 void drawSphere(float raio, int slices, int stacks);
 void drawBomb(int id, GLuint mode);
 void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize);
-bool checkCollision(AABB box1, AABB box2);
+// bool checkCollision(AABB box1, AABB box2);
+bool checkCollision(float posx, float posy, float posz, float raio, const std::vector<Wall>& paredes);
 
 /*
  * Funcao principal
@@ -247,7 +224,7 @@ void init_glut(const char *nome_janela, int argc, char** argv){
     glutAddMenuEntry("Desenhar a vermelho", 3);
     glutAddMenuEntry("Sair", 0);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
-    
+	   
     /*
      *  Ativacao dos parametros do modelo de iluminacao para a Luz 0
      */
@@ -318,30 +295,21 @@ void init_glut(const char *nome_janela, int argc, char** argv){
 	animation = glmLoadAnimation("models/bomberman/animations/bobm", shooting, 6);
     animations[shooting] = animation;
     printf(" done.\n");
-	
-	srand(5);
+ 
+	// srand(5);
 	// Percorre a matriz do jogo e cria paredes destrutíveis com base na probabilidade definida
 	for (int i = 0; i < MAP_WIDTH; i++) {
 	    for (int j = 0; j < MAP_HEIGHT; j++) {
-	        if (gameMap[i][j] == 0 && (float) rand() / RAND_MAX < DESTRUCTIBLE_WALL_PROBABILITY) {
-	            Wall wall;
-	            wall.x = i;
-	            wall.y = j;
-	            wall.centerX = (i - (MAP_WIDTH / 2)) + 0.5f;
-	            wall.centerY = 0.5f;
-	            wall.centerZ = (j - (MAP_HEIGHT / 2)) + 0.5f;
-	            wall.destructible = true;
-	            walls.push_back(wall);
-	        } else if (gameMap[i][j] == 1) { // Cria parede indestrutível
-	            Wall wall;
-	            wall.x = i;
-	            wall.y = j;
-	            wall.centerX = (i - (MAP_WIDTH / 2)) + 0.5f;
-	            wall.centerY = 0.5f;
-	            wall.centerZ = (j - (MAP_HEIGHT / 2)) + 0.5f;
-	            wall.destructible = false;
-	            walls.push_back(wall);
+			Wall wall;
+	        if (gameMap[i][j] == 1) {
+   	 			wall.x = i - centerX;
+    			wall.z = j - centerZ;
+    			wall.raio = 0.5;
+	            wall.destrutivel = true;
+	        } else if (gameMap[i][j] == 0) { // Cria parede indestrutível
+	            wall.destrutivel = false;
 	        }
+    		walls.push_back(wall);
 	    }
 	}
 
@@ -416,20 +384,10 @@ void display(void){
         glRotated (roty, 0.0f, 1.0f, 0.0f);
         glRotated (rotz, 0.0f, 0.0f, 1.0f);
         drawAnimation(animation_id, mode);
-        glutSolidCube(0.5); // desenha a caixa com tamanho 1.0
-        GLfloat half_size = 0.5f * scale; // metade do tamanho do cubo
-
-		box.minX = posx - half_size;
-		box.maxX = posx + half_size;
-		box.minY = posy - half_size;
-		box.maxY = posy + half_size;
-		box.minZ = posz - half_size;
-		box.maxZ = posz + half_size;
+        // glutSolidCube(0.5); // desenha a caixa com tamanho 1.0
+        // GLfloat half_size = 0.5f * scale; // metade do tamanhoss do cubo
 
     glPopMatrix();
-    
-
-
     
 	if(is_bombing){
 		
@@ -580,34 +538,6 @@ void drawBomb(int id, GLuint mode){
  	glmDrawAnimation(bombs[id], keyframe, mode);
 }
 
-void drawSphere(float raio, int slices, int stacks) {
-    for (int i = 0; i < stacks; i++)
-    {
-        float phi1 = M_PI * static_cast<float>(i) / stacks;
-        float phi2 = M_PI * static_cast<float>(i + 1) / stacks;
-
-        glBegin(GL_TRIANGLE_STRIP);
-        for (int j = 0; j <= slices; j++)
-        {
-            float theta = 2.0f * M_PI * static_cast<float>(j) / slices;
-            float x = raio * std::sin(phi2) * std::cos(theta);
-            float y = raio * std::sin(phi2) * std::sin(theta);
-            float z = raio * std::cos(phi2);
-
-            glNormal3f(x, y, z);
-            glVertex3f(x, y, z);
-
-            x = raio * std::sin(phi1) * std::cos(theta);
-            y = raio * std::sin(phi1) * std::sin(theta);
-            z = raio * std::cos(phi1);
-
-            glNormal3f(x, y, z);
-            glVertex3f(x, y, z);
-        }
-        glEnd();
-    }
-}
-
 void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize) {
     GLfloat size = 0.5;
     while (size < maxSize) {
@@ -620,35 +550,6 @@ void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize) {
         size += 0.1;
     }
 }
-
-// void drawFloor(GLuint mode){
-//     if(mode & GLM_SMOOTH) glEnable(GL_SMOOTH);
-//     else glEnable(GL_FLAT);
-//     glDisable(GL_TEXTURE_2D);
-//     for(int x = -15; x <= 15; x++ ){
-//         for (int z = -15; z <= 1; z++){
-//             glPushMatrix();
-//                 glTranslatef(x, 0, z);
-//                 glBegin(GL_TRIANGLES);
-//                     glNormal3f( 0.0, -1.0,  0.0);
-//                     glVertex3f( 0.5, -1.0, -0.5);
-//                     if(mode & GLM_SMOOTH) glNormal3f(0.0, -1.0, 0.0);
-//                     glVertex3f(-0.5, -1.0, -0.5);
-//                     if(mode & GLM_SMOOTH) glNormal3f(0.0, 1.0, 0.0);
-//                     glVertex3f( 0.5, -1.0,  0.5);
-//                     
-//                     glNormal3f(0.0, 1.0, 0.0);
-//                     glVertex3f(-0.5, -1.0,  0.5);
-//                     if(mode & GLM_SMOOTH)glNormal3f(0.0, 1.0, 0.0);
-//                     glVertex3f( 0.5, -1.0,  0.5);
-//                     if(mode & GLM_SMOOTH) glNormal3f(0.0, -1.0,  0.0);
-//                     glVertex3f(-0.5, -1.0, -0.5);
-//                 glEnd();
-//             glPopMatrix();
-//         }
-//     }
-//     glEnable(GL_TEXTURE_2D);
-// }
 
 void drawFloor(GLuint mode) {
 	
@@ -680,48 +581,19 @@ void drawFloor(GLuint mode) {
             glPopMatrix();
         }
     }
-    
-	// Calcula o centro da matriz
-	float centerX = (float)MAP_WIDTH / 2.0f;
-	float centerY = (float)MAP_HEIGHT / 2.0f;
-	
+
 	// printf("%f %f %f", walls.size(), centerX, centerY);
-// Desenha todas as paredes
-for (int i = 0; i < int(walls.size()); i++) {
-
-    int x = walls[i].x;
-    int y = walls[i].y;
-    bool destructible = walls[i].destructible;
-
-    // Define a cor da parede
-    if (destructible) {
-        glColor3f(1.0f, 0.0f, 0.0f); // Parede destrutível (vermelha)
-    } else {
-        glColor3f(0.5f, 0.5f, 0.5f); // Parede indestrutível (cinza)
-    }
-
-    // Desenha a parede
-    glPushMatrix();
-    glTranslatef(x - centerX, 0, y - centerY);
-    glScalef(1.2f, 2.0f, 1.2f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-
-    // Obtém informações da caixa delimitadora
-    float halfWidth = 0.6f; // metade da largura do cubo (1.0 * 1.2 / 2)
-    float halfHeight = 1.0f; // metade da altura do cubo (2.0 / 2)
-    float halfDepth = 0.6f; // metade da profundidade do cubo (1.0 * 1.2 / 2)
-    float centerX = x - centerX; // coordenada x do centro da parede em relação ao centro da sala
-    float centerY = 0.0f; // a parede não se move em relação à altura do chão
-    float centerZ = y - centerY; // coordenada y do centro da parede em relação ao centro da sala
-
-    // Usa as informações da caixa delimitadora para detectar colisões com o personagem
-    wallAABB = {centerX - halfWidth, centerY - halfHeight, centerZ - halfDepth,
-                     centerX + halfWidth, centerY + halfHeight, centerZ + halfDepth};
-	wallAABBs.push_back(wallAABB);
-}
-
-	
+	// Desenha todas as paredes
+	for (int i = 0; i < int(walls.size()); i++) {
+        if (walls[i].destrutivel == 1) {
+            // Desenha o muro na posição (i, j)
+            glPushMatrix();
+            glTranslatef(walls[i].x, 0, walls[i].z); // ajusta a posição do cubo de acordo com as coordenadas da matriz
+            glScalef(1.0f, 1.5f, 1.0f);
+            glutSolidCube(1.0f); // desenha o cubo
+            glPopMatrix();
+        }
+	}
 	glEnable(GL_TEXTURE_2D);
 }
 
@@ -798,13 +670,13 @@ void keyboard(unsigned char key, int x, int y){
         break;
         case 'r': case 'R': //Reseta as posicoes da camera e do objeto para os parametroz iniciais
             cam_rotx -= 0.0; cam_roty -= 0.0;
-            camx = 0.0; camy =  0.0; camz = CAMZ;
+            camx = 0.0; camy =  CAMY; camz = CAMZ;
             posx = 0.0; posy = POSY; posz = 0.0;
             rotx = 0.0; roty =  0.0; rotz = 0.0;
         break; // Tecle f ou F para ativar a animacao de shooting
     	case 'f': case 'F': 
     		if(!is_paused) keyPlayAnimation(shooting); 
-    		shoot = 0;
+    		// shoot = 0;
 		break; 
 
         // Tecle < ou > para alterar o FPS desejado
@@ -830,12 +702,25 @@ void update_direcao(){
     if(roty == -90.0 || roty == 270.0) direcao = esquerda;
 }
 
-bool checkCollision(AABB box1, AABB box2) {
-    if (box1.maxX < box2.minX || box1.minX > box2.maxX) return false;
-    if (box1.maxY < box2.minY || box1.minY > box2.maxY) return false;
-    if (box1.maxZ < box2.minZ || box1.minZ > box2.maxZ) return false;
-    return true;
+
+bool checkCollision(float posx, float posy, float posz, float raio, const std::vector<Wall>& paredes) {
+    // printf("entrei\n");
+	for (int i = 0; i < int(walls.size()); i++) {
+        float distancia = std::sqrt(std::pow(paredes[i].x - posx, 2) + std::pow(paredes[i].z - posz, 2));
+        float distancia_minima = raio + paredes[i].raio;
+        if (distancia < distancia_minima) {
+            // Houve uma colisão. Ajuste a posição do personagem para a borda da parede.
+            float ajuste_x = (posx - paredes[i].x) * distancia_minima / distancia;
+            float ajuste_z = (posz - paredes[i].z) * distancia_minima / distancia;
+            posx = paredes[i].x + ajuste_x;
+            posz = paredes[i].z + ajuste_z;
+            return true;
+		}
+    }
+	printf("nao colisao\n");
+    return false; // Não ocorreu colisão
 }
+
 
 /*
  * Controle das teclas especiais (Cursores, F1 a F12, etc...)
@@ -911,58 +796,31 @@ void keyboard_special(int key, int x, int y){
             glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, apply_texture);
         break;
             
-		case GLUT_KEY_RIGHT: // Move o personagem para direita
-		    if (!is_paused) {
-		        if (is_jumping) {
-		            keyPlayAnimation(jumping);
-		        } else {
-		            keyPlayAnimation(running);
-		        }
-		
-		        // Verificar a colisão com as paredes
-		        bool collided = false;
-		        for (int i = 0; i < int(walls.size()); i++) {
-		            if (checkCollision(box, wallAABBs[i])) {
-		                // há uma colisão com a parede i
-		                // execute o código para lidar com a colisão aqui
-		                collided = true;
-		                printf("colisao\n");
-		                break;
-		            }
-		        }
-		        
-		        if (!collided) {
-		            printf("andou\n");
-		            if (direcao == direita) {
-		                if (roty == 90.0) {
-		                    posx += deslocamento;
-		                } else if (roty < 90.0) {
-		                    roty -= graus;
-		                } else {
-		                    roty += graus;
-		                }
-		            } else if (direcao == esquerda) {
-		                if (roty >= 180.0) {
-		                    roty -= graus;
-		                } else {
-		                    roty += graus;
-		                }
-		            } else if (direcao == frente) {
-		                roty += graus;
-		            } else {
-		                roty -= graus;
-		            }
-		            update_direcao();
-		        }
-		    }
-		    break;
-
+        //Use as setas do teclado para movimentar o personagem
+        case GLUT_KEY_RIGHT: // Move o personagem para direita
+            if(!is_paused){
+                if(is_jumping) keyPlayAnimation(jumping);
+                else keyPlayAnimation(running);
+                if(checkCollision(posx + deslocamento, posy,posz, praio, walls) == false){
+	                 if(direcao==direita){
+	                    if(roty == 90.0) posx += deslocamento;
+	                    else if (roty < 90.0 ) roty -= graus;
+	                    else roty += graus;
+	                }else if (direcao == esquerda){
+	                    if( roty >= 180.0) roty -= graus;
+	                    else roty += graus;
+	                }else if (direcao == frente) roty += graus;
+	                else roty -= graus;
+	                update_direcao();
+				}else{printf("colisao\n");}
+            }
+        break;
 
         case GLUT_KEY_LEFT: // Move o personagem para esquerda
             if(!is_paused){
                 if(is_jumping) keyPlayAnimation(jumping);
                 else keyPlayAnimation(running);
-                if(posx >= -14){
+                if(!checkCollision(posx - deslocamento, posy,posz, praio, walls)){
 	                if(direcao==esquerda){
 	                    if(roty == -90.0 || roty == 270.0) posx -= deslocamento;
 	                    else if ( roty < -90.0 || roty < 270.0 ) roty += graus;
@@ -980,7 +838,7 @@ void keyboard_special(int key, int x, int y){
             if(!is_paused){
                 if(is_jumping) keyPlayAnimation(jumping);
                 else keyPlayAnimation(running);
-                if(posz >= -14){
+                if(!checkCollision(posx, posy,posz - deslocamento , praio, walls)){
 	                if(direcao == tras){
 	                    if(roty == 180.0) posz -= deslocamento;
 	                    else if(roty < 180.0) roty += graus;
@@ -995,7 +853,7 @@ void keyboard_special(int key, int x, int y){
             }
         break;
         case GLUT_KEY_DOWN: // Move o personagem para frente
-                if(!is_paused){
+                if(!checkCollision(posx, posy,posz + deslocamento, praio, walls)){
                     if(is_jumping) keyPlayAnimation(jumping);
                     else keyPlayAnimation(running);
                     if(posz <= 13){
