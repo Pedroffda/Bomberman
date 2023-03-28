@@ -23,6 +23,7 @@
 #include <cmath>
 #include <map>
 #include <unistd.h>
+#include <time.h>
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -50,27 +51,10 @@ const int MAP_WIDTH = 15;
 const int MAP_HEIGHT = 15;
 
 // Define o mapa do jogo
-int gameMap[MAP_WIDTH][MAP_HEIGHT] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-};
-
+int gameMap[MAP_WIDTH][MAP_HEIGHT];
 // Calcula o centro da matriz
-int centerX = (float)MAP_WIDTH / 2.0f;
-int centerZ= (float)MAP_HEIGHT / 2.0f;
+int centralx = (float)MAP_WIDTH / 2.0f;
+int centralz= (float)MAP_HEIGHT / 2.0f;
 
 // Define uma estrutura para armazenar as informações sobre as paredes
 struct Wall {
@@ -118,7 +102,7 @@ float graus = 15.0, deslocamento = 0.2; //incrementos do angulo de graus e do de
 float scale = 1.0; // fator de escala proporcional em todos os eixos do modelo 3D
 float rotx = 0.0, roty = 0.0, rotz = 0.0; // angulo de graus do modelo 3D no eixo x, y e z
 float posx = 0.0, posy = POSY, posz = 0.0; // deslocamento do modelo 3D no eixo x, y e z
-float praio = 0.1;
+float praio = 0.25;
 // float wraio = 0.25;
 float posxBomb = 0.0, posyBomb = POSYBOMB, poszBomb = 0.0;  //deslocamento da bomba
 
@@ -136,7 +120,9 @@ bool use_light = true; // Determina se liga ou desliga a luz
 bool render_solid = true; // Determina se renderiza o objeto solido ou em wireframe
 bool is_paused = false; // Determina se a animacao esta tocando ou em pausa
 
- 
+int delay_counter;
+
+
 int new_bomb_id = 0;
 
 GLint apply_texture = GL_DECAL; //Determina como a textura sera aplicada no objeto
@@ -181,6 +167,8 @@ void drawBomb(int id, GLuint mode);
 void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize);
 // bool checkCollision(AABB box1, AABB box2);
 bool checkCollision(float posx, float posy, float posz, float raio, const std::vector<Wall>& paredes);
+void generateMap();
+
 
 /*
  * Funcao principal
@@ -201,6 +189,10 @@ int main(int argc, char** argv){
  * Funcao para inicializacao do GLUT e de alguns parametros do OpenGL
  */
 void init_glut(const char *nome_janela, int argc, char** argv){
+	
+	// Gera o mapa aleatório
+    generateMap();
+    
     // inicia o GLUT
     glutInit(&argc,argv);
 
@@ -302,8 +294,8 @@ void init_glut(const char *nome_janela, int argc, char** argv){
 	    for (int j = 0; j < MAP_HEIGHT; j++) {
 			Wall wall;
 	        if (gameMap[i][j] == 1) {
-   	 			wall.x = i - centerX;
-    			wall.z = j - centerZ;
+   	 			wall.x = i - centralx;
+    			wall.z = j - centralz;
     			wall.raio = 0.5;
 	            wall.destrutivel = true;
 	        } else if (gameMap[i][j] == 0) { // Cria parede indestrutível
@@ -394,7 +386,7 @@ void display(void){
 		new_bomb = glmLoadAnimation("models/bomberman/bomba/bomba.obj", normal, 1);
 	    printf("\npassou\n");
 	    new_bomb->name = "normal";
-	    
+	    new_bomb->keyframes = 1;
 	    new_bomb->position[0] = posx;
 	    new_bomb->position[1] = BPOSY;
 	    new_bomb->position[2] = posz;
@@ -430,14 +422,22 @@ void display(void){
     
     if(is_jumping && keyframe == animations[jumping]->keyframes - 1) is_jumping = false;
     
- //    if(is_bombing && keyframe == bombs[normal]->keyframes + 1){
-	// 	if (!bombs.empty()) {
-	// 	    for (std::map<int, GLManimation*>::iterator it = bombs.begin(); it != bombs.end(); it++) {
-	// 	        drawExplosion(it->second->position[0], 0, it->second->position[2], 4.0f); 
-	// 	        printf("booom\n");
-	// 	    }
-	// 	}
-	// }
+	int delay_counter = 30; // contador de delay de 3 segundos
+
+	if (!bombs.empty()) {
+	    for (std::map<int, GLManimation*>::iterator it = bombs.begin(); it != bombs.end(); it++) {
+	        if (keyframe % 10 == 0) { // verifica a cada 10 quadros
+	            if (delay_counter > 0) { // ainda está em delay
+	                delay_counter--;
+	            } else { // delay acabou, explode a bomba
+	                // drawExplosion(it->second->position[0], 0, it->second->position[2], 4.0f);
+	                bombs.erase(it); 
+	                printf("booom\n");
+	            }
+	        }
+	    }
+	}
+
     
     // Translada a camera no eixo Z se distanciando do objeto
     glLoadIdentity();
@@ -634,6 +634,8 @@ void keyboard(unsigned char key, int x, int y){
         case 'd': case 'D': //Rotaciona a camera em torno do eixo Y no sentido anti-horario
             float radianos;
             cam_roty += graus;
+            roty += graus;
+			if (roty >= 360.0) roty = 0.0;
             if (cam_roty >= 360.0) cam_roty = 0.0;
             radianos = (cam_roty * M_PI)/180.0;
             camx = 0.0; camz = CAMZ;
@@ -642,6 +644,8 @@ void keyboard(unsigned char key, int x, int y){
         break;
         case 'a': case 'A': //Rotaciona a camera em torno do eixo Y no sentido horario
             cam_roty -= graus;
+            roty -= graus;
+			if (roty >= 360.0) roty = 0.0;
             if (cam_roty <= -360.0) cam_roty = 0.0;
             radianos = (cam_roty * M_PI)/180.0;
             camx = 0.0; camz = CAMZ;
@@ -873,6 +877,34 @@ void keyboard_special(int key, int x, int y){
         break;
     }
 }
+
+void generateMap() {
+	// Define a semente aleatória
+    srand(time(NULL));
+    // Preenche a matriz com paredes e blocos destrutíveis aleatórios
+    for(int i = 0; i < MAP_HEIGHT; i++) {
+        for(int j = 0; j < MAP_WIDTH; j++) {
+            if(i == 0 || i == MAP_HEIGHT - 1 || j == 0 || j == MAP_WIDTH - 1) {
+                // Cria paredes ao redor do mapa
+                gameMap[i][j] = 1;	
+            } else if(i % 2 == 0 && j % 2 == 0) {
+                // Cria paredes nos pontos pares
+                gameMap[i][j] = 1;
+            } else if (i == centralz && j == centralx) {
+                // Define o ponto central como vazio
+                gameMap[i][j] = 0;
+            } else if ((i == centralz+1 && j == centralx) || (i == centralz-1 && j == centralx) || 
+                       (i == centralz && j == centralx+1) || (i == centralz && j == centralx-1)) {
+                // Não cria paredes ou blocos nos arredores do personagem
+                gameMap[i][j] = 0;
+            } else {
+                // 50% de chance de criar um bloco destrutível
+                gameMap[i][j] = rand() % 2;
+            }
+        }
+    }
+}
+
 
 /*
  * Controle do menu pop-up
