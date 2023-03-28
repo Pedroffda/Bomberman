@@ -24,6 +24,10 @@
 #include <map>
 #include <unistd.h>
 #include <time.h>
+#include <iostream>
+#include <windows.h>      //usada para reproduzir sons de fundo
+#include <mmsystem.h>
+
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -47,8 +51,8 @@
 
 // Define a probabilidade de criar uma parede destrutível em uma posição vazia do mapa
 const float DESTRUCTIBLE_WALL_PROBABILITY = 0.1;
-const int MAP_WIDTH = 15;
-const int MAP_HEIGHT = 15;
+const int MAP_WIDTH = 30;
+const int MAP_HEIGHT = 30;
 
 // Define o mapa do jogo
 int gameMap[MAP_WIDTH][MAP_HEIGHT];
@@ -60,6 +64,8 @@ int centralz= (float)MAP_HEIGHT / 2.0f;
 struct Wall {
     float x, y , z, raio ;
     bool destrutivel;
+    bool quebrado;
+    int id;
 };
 
 std::vector<Wall> walls;
@@ -120,8 +126,11 @@ bool use_light = true; // Determina se liga ou desliga a luz
 bool render_solid = true; // Determina se renderiza o objeto solido ou em wireframe
 bool is_paused = false; // Determina se a animacao esta tocando ou em pausa
 
-int delay_counter;
-
+// int delay_counter;
+int bomb_delay = 3000;  // Tempo em milissegundos antes da explosão da bomba
+int current_time = 0;   // Tempo atual em milissegundos
+// raio da bomba em unidades do mundo
+const float BOMB_RADIUS = 4.0f;
 
 int new_bomb_id = 0;
 
@@ -146,6 +155,16 @@ GLfloat material_Ks[] = {0.99, 0.94, 0.81, 1.00};
 GLfloat material_Ke[] = {0.00, 0.00, 0.00, 0.00};
 GLfloat material_Se = 28;
 
+// Declaração de estrutura para informações do arquivo de som
+typedef struct {
+    const char* nome_arquivo;  // nome do arquivo de som
+    const char* tipo;         // tipo de arquivo de som (wav, mp3, etc.)
+} som_info;
+
+// Declaração de variável para armazenar informações do arquivo de som
+som_info som;
+
+
 /*
  * Declaracoes antecipadas (forward) das funcoes (assinaturas)
  */
@@ -164,11 +183,13 @@ void menu(int value);
 
 void drawSphere(float raio, int slices, int stacks);
 void drawBomb(int id, GLuint mode);
-void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize);
+void drawExplosion(GLfloat x, GLfloat y, GLfloat z);
 // bool checkCollision(AABB box1, AABB box2);
 bool checkCollision(float posx, float posy, float posz, float raio, const std::vector<Wall>& paredes);
 void generateMap();
-
+bool isBlockInBombRange(GLManimation* block, GLManimation* bomb);
+void destroyBlocksInRange(GLManimation* bomb);
+void destroyWall(Wall& wall);
 
 /*
  * Funcao principal
@@ -298,8 +319,10 @@ void init_glut(const char *nome_janela, int argc, char** argv){
     			wall.z = j - centralz;
     			wall.raio = 0.5;
 	            wall.destrutivel = true;
+	            wall.quebrado = false;
 	        } else if (gameMap[i][j] == 0) { // Cria parede indestrutível
 	            wall.destrutivel = false;
+	            wall.quebrado = false;
 	        }
     		walls.push_back(wall);
 	    }
@@ -339,6 +362,7 @@ void reshape(int w, int h){
  * Funcao para controlar o display
  */
 void display(void){
+	
     // Computa a taxa  de desenho de frames por segundo
     computeFPS(keyframe_rate); // Incrementa o keyframe da animacao a ser desenhado
     // Apaga o video e o depth buffer, e reinicia a matriz
@@ -390,6 +414,7 @@ void display(void){
 	    new_bomb->position[0] = posx;
 	    new_bomb->position[1] = BPOSY;
 	    new_bomb->position[2] = posz;
+	    new_bomb->creation_time = glutGet(GLUT_ELAPSED_TIME);  // Definindo o tempo de criação
 	    bombs[new_bomb_id] = new_bomb;
 	    is_bombing = false;
 	    printf("%f %f %f \n", new_bomb->position[0], new_bomb->position[1], new_bomb->position[2]);
@@ -422,22 +447,26 @@ void display(void){
     
     if(is_jumping && keyframe == animations[jumping]->keyframes - 1) is_jumping = false;
     
-	int delay_counter = 30; // contador de delay de 3 segundos
+	// int delay_counter = 300; // contador de delay de 3 segundos
 
 	if (!bombs.empty()) {
-	    for (std::map<int, GLManimation*>::iterator it = bombs.begin(); it != bombs.end(); it++) {
-	        if (keyframe % 10 == 0) { // verifica a cada 10 quadros
-	            if (delay_counter > 0) { // ainda está em delay
-	                delay_counter--;
-	            } else { // delay acabou, explode a bomba
-	                // drawExplosion(it->second->position[0], 0, it->second->position[2], 4.0f);
-	                bombs.erase(it); 
-	                printf("booom\n");
-	            }
+	    int current_time = glutGet(GLUT_ELAPSED_TIME);
+	    for (std::map<int, GLManimation*>::iterator it = bombs.begin(); it != bombs.end(); ) {
+	        if (current_time - it->second->creation_time >= bomb_delay) {
+	            drawExplosion(it->second->position[0], 0, it->second->position[2]);
+	            destroyBlocksInRange(it->second);
+	            bombs.erase(it++);
+	            printf("booom\n");
+	            som.nome_arquivo = "./audios/bombaExplodir.wav";
+				som.tipo = "WAVE";
+				//char som[] = "../audios/background.wav";
+				PlaySound(som.nome_arquivo, NULL, SND_FILENAME | SND_ASYNC); //Inicia o áudio de fundo do jogo
+				
+	        } else {
+	            ++it;
 	        }
 	    }
 	}
-
     
     // Translada a camera no eixo Z se distanciando do objeto
     glLoadIdentity();
@@ -538,14 +567,14 @@ void drawBomb(int id, GLuint mode){
  	glmDrawAnimation(bombs[id], keyframe, mode);
 }
 
-void drawExplosion(GLfloat x, GLfloat y, GLfloat z, GLfloat maxSize) {
+void drawExplosion(GLfloat x, GLfloat y, GLfloat z) {
     GLfloat size = 0.5;
-    while (size < maxSize) {
+    while (size < BOMB_RADIUS) {
         glPushMatrix();
         glTranslatef(x, y, z);
         glScalef(size, size, size);
         glColor3f(1.0, 0.0, 0.0);
-        glutSolidSphere(1.0, 20, 20);
+        glutSolidSphere(1.0, 10, 10);
         glPopMatrix();
         size += 0.1;
     }
@@ -585,7 +614,8 @@ void drawFloor(GLuint mode) {
 	// printf("%f %f %f", walls.size(), centerX, centerY);
 	// Desenha todas as paredes
 	for (int i = 0; i < int(walls.size()); i++) {
-        if (walls[i].destrutivel == 1) {
+        if (walls[i].quebrado == 0) {
+        	
             // Desenha o muro na posição (i, j)
             glPushMatrix();
             glTranslatef(walls[i].x, 0, walls[i].z); // ajusta a posição do cubo de acordo com as coordenadas da matriz
@@ -899,12 +929,51 @@ void generateMap() {
                 gameMap[i][j] = 0;
             } else {
                 // 50% de chance de criar um bloco destrutível
-                gameMap[i][j] = rand() % 2;
+                gameMap[i][j] = rand() % 8;
             }
         }
     }
 }
 
+
+// função para destruir um bloco destrutível
+void destroyBlock(GLManimation* block) {
+    // remover o bloco da estrutura de dados
+    // walls.erase(block);
+
+    // desenhar uma animação de destruição em seu lugar
+    // ...
+}
+
+
+// função para checar se um bloco está dentro do raio da bomba
+bool isBlockInBombRange(Wall* wall, GLManimation* bomb) {
+    float dx = wall->x - bomb->position[0];
+    float dz = wall->z - bomb->position[2];
+    float dist = sqrt(dx*dx + dz*dz);
+    return dist <= BOMB_RADIUS;
+}
+
+void destroyWall(Wall& wall) {
+    // Remover a parede do vetor de paredes
+    for (std::vector<Wall>::iterator it = walls.begin(); it != walls.end(); ++it) {
+        if (it->x == wall.x && it->z == wall.z) {
+            //walls.erase(it);
+            wall.quebrado = 1;
+            break;
+        }
+    }
+}
+
+// função para destruir todos os blocos destrutíveis dentro do raio da bomba
+void destroyBlocksInRange(GLManimation* bomb) {
+    std::vector<GLManimation*> blocks_to_destroy;
+    for (std::vector<Wall>::iterator it = walls.begin(); it != walls.end(); ++it) {
+        if (it->destrutivel && isBlockInBombRange(&(*it), bomb)) {
+            destroyWall(*it);
+        }
+    }
+}
 
 /*
  * Controle do menu pop-up
